@@ -85,7 +85,7 @@ CACHES = {
 SESSION_CACHE_ALIAS='sync_cache'
 ```
 
-# Raw client
+## Raw client
 `AsyncRedisEXCache`的同步方法会在使用后关闭连接，如果你需要在同步函数中使用`AsyncRedisEXCache` 的raw client，你同样需要在使用后关闭连接。
 
 ```python
@@ -104,3 +104,35 @@ async def aget_data():
 def get_data():
     return async_to_sync(aget_data)()
 ```
+
+## Use in django testcase
+
+若要在django testcase中使用异步cache，你需要在每个测试用例结束后清理连接
+
+```python
+from django.core.cache import cache
+from django.test import TestCase
+
+
+class CacheTestCase(TestCase):
+
+    async def clear_pool(self):
+        for p in cache._cache._pools.values():
+            await p.disconnect()
+
+    async def test_redis_get(self):
+        k = 'test_key'
+        assert await cache.aget(k) is None
+        # ...
+        # clear
+        await self.clear_pool()
+
+    async def test_redis_set(self):
+        k = 'test_key'
+        await cache.aset(k, 1)
+        # ...
+
+        # clear
+        await self.clear_pool()
+```
+

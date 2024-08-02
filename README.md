@@ -95,7 +95,7 @@ CACHES = {
 SESSION_CACHE_ALIAS = 'sync_cache'
 ```
 
-# Raw client
+## Raw client
 
 The synchronization method of `AsyncRedisEXCache` closes the connection after use, and if you need to use the raw client
 of `AsyncRedisEXCache` in a synchronization function, you likewise need to close the connection after use.
@@ -115,4 +115,35 @@ async def aget_data():
 
 def get_data():
     return async_to_sync(aget_data)()
+```
+
+## Use in django testcase
+
+To use asynchronous cache in a django testcase, you need to clean up connections at the end of each test case.
+
+```python
+from django.core.cache import cache
+from django.test import TestCase
+
+
+class CacheTestCase(TestCase):
+
+    async def clear_pool(self):
+        for p in cache._cache._pools.values():
+            await p.disconnect()
+
+    async def test_redis_get(self):
+        k = 'test_key'
+        assert await cache.aget(k) is None
+        # ...
+        # clear
+        await self.clear_pool()
+
+    async def test_redis_set(self):
+        k = 'test_key'
+        await cache.aset(k, 1)
+        # ...
+
+        # clear
+        await self.clear_pool()
 ```
