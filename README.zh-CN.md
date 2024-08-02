@@ -27,7 +27,7 @@ CACHES = {
 * https://docs.djangoproject.com/en/5.0/topics/cache/#cache-arguments
 
 
-您也可以使用修复了bug的同步 `RedisEXCache` 。
+您也可以使用修复了bug的同步cache 。
 
 ```python
 CACHES = {
@@ -39,10 +39,10 @@ CACHES = {
 ```
 
 ## Notes
-RedisEXCache`、`AsyncRedisEXCache` 同时支持异步和同步方法。 
+虽然`RedisEXCache`、`AsyncRedisEXCache` 同时支持异步和同步方法，但建议在同步项目中使用`RedisEXCache`，异步项目中使用`AsyncRedisEXCache`。
 
-但是，`AsyncRedisEXCache` 中的同步方法会在使用后关闭连接，因此如果您的项目中有大量使用缓存的同步代码，建议您添加一个同步缓存并在同步代码中使用。
-例如：
+如果你的项目同时包含同步和异步的代码，建议添加两个cache（一个同步、一个异步）。
+比如：
 ```python
 
 CACHES = {
@@ -67,7 +67,8 @@ async def async_do():
     await caches['default'].aget('key')
 ```
 
-## About Session
+## Session
+
 由于 Django 的session还不支持异步，如果使用缓存作为session后端，建议添加个同步缓存并将其设置为session后端。
 ```python
 CACHES = {
@@ -82,4 +83,24 @@ CACHES = {
 }
 
 SESSION_CACHE_ALIAS='sync_cache'
+```
+
+# Raw client
+`AsyncRedisEXCache`的同步方法会在使用后关闭连接，如果你需要在同步函数中使用`AsyncRedisEXCache` 的raw client，你同样需要在使用后关闭连接。
+
+```python
+from django.core.cache import cache
+from asgiref.sync import async_to_sync
+
+
+async def aget_data():
+    client = cache._cache.get_client(write=False)
+    a = await client.get("a")
+    b = await client.get("b")
+    await client.aclose(close_connection_pool=True)
+    return a, b
+
+
+def get_data():
+    return async_to_sync(aget_data)()
 ```
