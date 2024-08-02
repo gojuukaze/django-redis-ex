@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+[tool.hatch.build.targets.wheel]
+packages = ["django_redis_ex"]
+
+[project]
+name = "django_redis_ex"
+version = "1.0.0"
+authors = [
+    { name = "gojuukaze", email = "ikaze_email@163.com" },
+]
+description = "Async and sync Redis cache backend for Django."
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "redis>=4.2.0",
+    "django>=4.0",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Framework :: Django"
+]
+
+[project.urls]
+Homepage = "https://github.com/gojuukaze/django-redis-ex"
+Issues = "https://github.com/gojuukaze/django-redis-ex/issues"

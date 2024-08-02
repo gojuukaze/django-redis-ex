@@ -3,7 +3,7 @@
 This library is based on `django.core.cache.backends.redis.RedisCache` modification.
 
 It uses asyncio Redis to create connections and both asynchronous and synchronous methods are supported.
-Also fixed a connection pooling bug Django RedisCache ([#35651](https://code.djangoproject.com/ticket/35651)).
+Also fixed a connection pooling bug of Django RedisCache ([#35651](https://code.djangoproject.com/ticket/35651)).
 
 # User guide
 
